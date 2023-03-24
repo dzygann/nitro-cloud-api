@@ -1,5 +1,7 @@
 import os
 import docker
+import socket
+import json
 from subprocess import Popen, PIPE
 from werkzeug.utils import secure_filename
 from flask import Flask, request, Response
@@ -17,7 +19,8 @@ app.config['UPLOAD_FOLDER'] = upload_folder
 
 
 ERROR_MESSAGE_PREFIX = 'Something went wrong\n'
-
+ENCLAVE_CID = 16
+ENCLAVE_PORT = 5000
 
 @app.route('/docker-build', methods=['POST'])
 def docker_build():
@@ -37,7 +40,7 @@ def docker_build():
     # os.getcwd()
 
     docker_image = client.images.build(path=os.getcwd(),
-                                       tag=request_json.get('tag'))
+                        tag=request_json.get('tag'))
 
     return "docker created successfully"
 
@@ -124,7 +127,7 @@ def build_enclave():
             "/usr/bin/nitro-cli", "build-enclave",
             "--docker-uri", request_json.get('docker-uri'),
             "--output-file", app.config['UPLOAD_FOLDER'] + request_json.get('output-file'),
-                             ],
+        ],
         stdout=PIPE,
         stderr=PIPE
     )
@@ -395,6 +398,38 @@ def stream():
 
     out, err = Popen(['ls', '-l'], stdout=PIPE, stderr=PIPE).communicate()
     return Response(out.splitlines(), mimetype='text/plain')
+
+
+@app.route('/test', methods=['GET'])
+def test():
+    """Test."""
+
+    response = call_to_enclave({
+        'message': request.args.get('message')
+    })
+    print(response)
+    if not response['success']:
+        return response
+
+    return {
+        'success': True,
+        'response': response
+    }
+
+
+def call_to_enclave(dictionary):
+    """Send a message to the Enclave and read the response."""
+    try:
+        vsock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM) # pylint:disable=no-member
+        vsock.connect((ENCLAVE_CID, ENCLAVE_PORT))
+        vsock.send(str.encode(json.dumps(dictionary)))
+        return_data = vsock.recv(1024).decode()
+        return json.loads(return_data)
+    except Exception as exc:  # pylint:disable=broad-except
+        return {
+            'success': False,
+            'error': str(exc)
+        }
 
 
 if __name__ == '__main__':
