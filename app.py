@@ -46,6 +46,32 @@ def docker_build():
     return "docker created successfully"
 
 
+@app.route('/docker-build/hello-enclave', methods=['GET'])
+def docker_build_hello():
+    """
+    :return:
+    curl -X GET http://localhost:5000/docker-build/hello-enclave
+    """
+
+    docker_image = client.images.build(path=os.getcwd() + '/examples/hello-enclave/',
+                                       tag='hello-enclave')
+
+    return "hello-enclave docker created successfully"
+
+
+@app.route('/docker-build/mariadb-enclave', methods=['GET'])
+def docker_build_mariadb():
+    """
+    :return:
+    curl -X GET http://localhost:5000/docker-build/mariadb-enclave
+    """
+
+    docker_image = client.images.build(path=os.getcwd() + '/examples/mariadb-enclave/',
+                                       tag='mariadb-enclave')
+
+    return "mariadb-enclave docker created successfully"
+
+
 @app.route('/docker-images', methods=['GET'])
 def docker_images():
     """
