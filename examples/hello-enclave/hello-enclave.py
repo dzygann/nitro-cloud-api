@@ -22,7 +22,7 @@ def main():
         # Load the JSON data provided over vsock
         try:
             json_payload = json.loads(payload.decode())
-        except Exception as exc: # pylint:disable=broad-except
+        except Exception as exc:  # pylint:disable=broad-except
             msg = f'Exception ({type(exc)}) while loading JSON data: {str(exc)}'
             content = {
                 'success': False,

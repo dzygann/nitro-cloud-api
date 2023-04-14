@@ -22,6 +22,7 @@ ERROR_MESSAGE_PREFIX = 'Something went wrong\n'
 ENCLAVE_CID = 16
 ENCLAVE_PORT = 5000
 
+
 @app.route('/docker-build', methods=['POST'])
 def docker_build():
     """
@@ -420,7 +421,7 @@ def test():
 def call_to_enclave(dictionary):
     """Send a message to the Enclave and read the response."""
     try:
-        vsock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM) # pylint:disable=no-member
+        vsock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)  # pylint:disable=no-member
         vsock.connect((ENCLAVE_CID, ENCLAVE_PORT))
         vsock.send(str.encode(json.dumps(dictionary)))
         return_data = vsock.recv(1024).decode()
