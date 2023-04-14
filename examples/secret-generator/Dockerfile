@@ -6,7 +6,7 @@ WORKDIR /app
 
 COPY libnsm.so ./
 
-COPY hello-enclave.py ./
+COPY secret-generator.py ./
 COPY traffic_forwarder.py ./
 COPY bootstrap.sh ./
 

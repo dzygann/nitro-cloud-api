@@ -1,8 +1,15 @@
 """Enclave application."""
 import socket
 import json
+import random
+import string
 
 ENCLAVE_PORT = 5000
+
+
+def secret_generator(length=8):
+    s = string.ascii_lowercase
+    return ''.join(random.choice(s) for i in range(length))
 
 
 def main():
@@ -34,7 +41,8 @@ def main():
 
         content = {
             'success': True,
-            'return_payload': json_payload
+            'return_payload': json_payload,
+            'secret': secret_generator(10)
         }
 
         conn.send(str.encode(json.dumps(content)))

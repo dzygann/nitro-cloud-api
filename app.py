@@ -1,14 +1,15 @@
-import os
-import docker
-import socket
 import json
+import os
+import socket
 from subprocess import Popen, PIPE
-from werkzeug.utils import secure_filename
+
+import docker
 from flask import Flask, request, Response
+from werkzeug.utils import secure_filename
 
 app = Flask(__name__)
 
-#upload_folder = "uploads/"
+# upload_folder = "uploads/"
 upload_folder = "./"
 if not os.path.exists(upload_folder):
     os.mkdir(upload_folder)
@@ -16,7 +17,6 @@ if not os.path.exists(upload_folder):
 client = docker.client.from_env()
 
 app.config['UPLOAD_FOLDER'] = upload_folder
-
 
 ERROR_MESSAGE_PREFIX = 'Something went wrong\n'
 ENCLAVE_CID = 16
@@ -41,7 +41,7 @@ def docker_build():
     # os.getcwd()
 
     docker_image = client.images.build(path=os.getcwd(),
-                        tag=request_json.get('tag'))
+                                       tag=request_json.get('tag'))
 
     return "docker created successfully"
 
@@ -221,6 +221,7 @@ def run_enclave():
 
     :return:
      curl -X POST -H "Content-type: application/json" -d "{\"eif-path\":\"hello-world.eif\"}" http://127.0.0.1:5000/nitro-run
+     curl -X POST -H "Content-type: application/json" -d "{\"eif-path\":\"hello-enclave.eif\"}" http://127.0.0.1:5000/nitro-run
     """
 
     content_type = request.headers.get('Content-Type')
@@ -423,14 +424,16 @@ def terminate_enclave():
 
 @app.route('/stream')
 def stream():
-
     out, err = Popen(['ls', '-l'], stdout=PIPE, stderr=PIPE).communicate()
     return Response(out.splitlines(), mimetype='text/plain')
 
 
-@app.route('/test', methods=['GET'])
+@app.route('/send', methods=['GET'])
 def test():
-    """Test."""
+    """Test.
+
+    curl -X GET http://localhost:5000/send?message=it_works
+    """
 
     response = call_to_enclave({
         'message': request.args.get('message')
