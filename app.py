@@ -53,7 +53,7 @@ def docker_build_hello():
     curl -X GET http://localhost:5000/docker-build/hello-enclave
     """
 
-    docker_image = client.images.build(path=os.getcwd() + '/examples/hello-enclave/',
+    docker_image = client.images.build(path=os.getcwd() + '/examples/hello-enclave',
                                        tag='hello-enclave')
 
     return "hello-enclave docker created successfully"
@@ -66,7 +66,7 @@ def docker_build_mariadb():
     curl -X GET http://localhost:5000/docker-build/mariadb-enclave
     """
 
-    docker_image = client.images.build(path=os.getcwd() + '/examples/mariadb-enclave/',
+    docker_image = client.images.build(path=os.getcwd() + '/examples/mariadb-enclave',
                                        tag='mariadb-enclave')
 
     return "mariadb-enclave docker created successfully"
@@ -136,7 +136,8 @@ def build_enclave():
     :return:
 
     curl -X POST -H "Content-type: application/json" -d "{\"docker-uri\":\"hello-world:latest\", \"output-file\":\"hello-world.eif\"}" http://127.0.0.1:5000/nitro-build
-
+    curl -X POST -H "Content-type: application/json" -d "{\"docker-uri\":\"hello-enclave:latest\", \"output-file\":\"hello-enclave.eif\"}" http://127.0.0.1:5000/nitro-build
+    curl -X POST -H "Content-type: application/json" -d "{\"docker-uri\":\"mariadb-enclave:latest\", \"output-file\":\"mariadb-enclave.eif\"}" http://127.0.0.1:5000/nitro-build
     """
 
     content_type = request.headers.get('Content-Type')
@@ -235,7 +236,7 @@ def run_enclave():
         [
             "/usr/bin/nitro-cli", "run-enclave",
             "--cpu-count", "2",
-            "--memory", "512",
+            "--memory", "2048",
             "--eif-path", app.config['UPLOAD_FOLDER'] + request_json.get('eif-path'),
             "--debug-mode"
         ],

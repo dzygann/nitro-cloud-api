@@ -14,8 +14,7 @@ WORKDIR /database_connector
 COPY database.py .
 COPY entrypoint.sh .
 
-RUN chmod +x entrypoint.sh
-
 EXPOSE 80 3306
 
-CMD["/database_connector/entrypoint.sh"]
+RUN chmod +x entrypoint.sh
+CMD ["/database_connector/entrypoint.sh"]
