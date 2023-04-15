@@ -19,7 +19,6 @@ client = docker.client.from_env()
 app.config['UPLOAD_FOLDER'] = upload_folder
 
 ERROR_MESSAGE_PREFIX = 'Something went wrong\n'
-ENCLAVE_CID = 16
 ENCLAVE_PORT = 5000
 
 
@@ -428,16 +427,25 @@ def stream():
     return Response(out.splitlines(), mimetype='text/plain')
 
 
-@app.route('/send', methods=['GET'])
+@app.route('/send', methods=['POST'])
 def test():
     """Test.
 
-    curl -X GET http://localhost:5000/send?message=it_works
+    curl -X POST -H "Content-Type: application/json" -d "{\"enclave-cid\":\"17\"}"  http://localhost:5000/send?message=it_works
     """
+
+    content_type = request.headers.get('Content-Type')
+    if content_type == 'application/json':
+        request_json = request.json
+    else:
+        return 'Not supported content type'
+
+    if request_json.get('enclave-cid') is None:
+        return 'Not supported enclave-cid is missing'
 
     response = call_to_enclave({
         'message': request.args.get('message')
-    })
+    }, request_json.get('enclave-cid'))
     print(response)
     if not response['success']:
         return response
@@ -448,11 +456,11 @@ def test():
     }
 
 
-def call_to_enclave(dictionary):
+def call_to_enclave(dictionary, enclave_cid):
     """Send a message to the Enclave and read the response."""
     try:
         vsock = socket.socket(socket.AF_VSOCK, socket.SOCK_STREAM)  # pylint:disable=no-member
-        vsock.connect((ENCLAVE_CID, ENCLAVE_PORT))
+        vsock.connect((int(enclave_cid), ENCLAVE_PORT))
         vsock.send(str.encode(json.dumps(dictionary)))
         return_data = vsock.recv(1024).decode()
         return json.loads(return_data)

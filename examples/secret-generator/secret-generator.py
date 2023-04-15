@@ -7,11 +7,6 @@ import string
 ENCLAVE_PORT = 5000
 
 
-def secret_generator(length=8):
-    s = string.ascii_lowercase
-    return ''.join(random.choice(s) for i in range(length))
-
-
 def main():
     """Run the nitro enclave application."""
     # Bind and listen on vsock.
@@ -38,11 +33,11 @@ def main():
             conn.send(str.encode(json.dumps(content)))
             conn.close()
             continue
-
+        s = string.ascii_lowercase+string.digits
         content = {
             'success': True,
             'return_payload': json_payload,
-            'secret': secret_generator(10)
+            'secret': ''.join(random.sample(s, 10))
         }
 
         conn.send(str.encode(json.dumps(content)))
